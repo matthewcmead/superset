@@ -19,4 +19,6 @@ export SUPERSET_VERSION=0.20.4
         infi.clickhouse_orm==0.9.8 \
         iso8601==0.1.12 \
         Werkzeug==0.12.1 \
+        requests==2.17.3 \
+        urllib3==1.21.1 \
         superset==$SUPERSET_VERSION
