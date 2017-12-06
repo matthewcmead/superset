@@ -1,14 +1,14 @@
 FROM matthewcmead/anaconda-nb-docker-centos7 as builder
 
 # Superset version
-ARG SUPERSET_VERSION=0.20.4
+ARG SUPERSET_VERSION=0.20.6
 
 # Configure environment
 ENV LANG=en_US.utf8 \
     LC_ALL=en_US.utf8 \
-    PATH=$PATH:/home/superset/.bin \
     PYTHONPATH=/etc/superset:$PYTHONPATH \
-    SUPERSET_VERSION=${SUPERSET_VERSION}
+    SUPERSET_VERSION=${SUPERSET_VERSION} \
+    SUPERSET_HOME=/home/superset
 
 COPY pips /project/pips
 
@@ -23,7 +23,9 @@ RUN \
       openldap-devel \
       mariadb-devel \
       postgresql-devel \
-&&  pip install --find-links /project/pips \
+      libffi-devel \
+&&  pip install --no-index --find-links /project/pips \
+        flask-cors==3.0.3 \
         flask-mail==0.9.1 \
         flask-oauth==0.12 \
         flask_oauthlib==0.9.3 \
@@ -46,27 +48,27 @@ RUN  mkdir /conda_overlay \
 FROM matthewcmead/anaconda-nb-docker-centos7 as runner
 
 # Superset version
-ARG SUPERSET_VERSION=0.20.4
+ARG SUPERSET_VERSION=0.20.6
 
 # Configure environment
 ENV LANG=en_US.utf8 \
     LC_ALL=en_US.utf8 \
-    PATH=$PATH:/home/superset/.bin \
     PYTHONPATH=/etc/superset:$PYTHONPATH \
-    SUPERSET_VERSION=${SUPERSET_VERSION}
+    SUPERSET_VERSION=${SUPERSET_VERSION} \
+    SUPERSET_HOME=/home/superset
 
 RUN yum install -y \
       cyrus-sasl-devel \
       openldap-devel \
       mariadb-devel \
       postgresql-devel \
+      libffi-devel \
 &&  yum clean all
 
 COPY --from=builder /conda_overlay/conda /opt/conda
 
 RUN useradd -b /home -U -m superset && \
     mkdir /etc/superset && \
-    touch /etc/superset/superset.db && \
     chown -R superset:superset /home/superset /etc/superset
 
 # Configure Filesysten
