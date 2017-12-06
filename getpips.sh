@@ -2,7 +2,7 @@
 
 yum install -y mariadb-devel postgresql
 cd /project/pips
-export SUPERSET_VERSION=0.20.4
+export SUPERSET_VERSION=0.20.6
 	pip download \
         flask-cors==3.0.3 \
         flask-mail==0.9.1 \
