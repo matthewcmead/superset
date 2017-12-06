@@ -26,6 +26,17 @@ services:
       - "8088:8088"
     volumes:
       - ./superset:/etc/superset
+  worker:
+    image: amancevice/superset
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      MAPBOX_API_KEY: ${MAPBOX_API_KEY}
+    volumes:
+      - ./superset:/etc/superset
+    command: worker
 volumes:
   postgres:
     external: false
