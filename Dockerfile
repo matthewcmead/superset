@@ -1,7 +1,7 @@
 FROM matthewcmead/anaconda-nb-docker-centos7 as builder
 
 # Superset version
-ARG SUPERSET_VERSION=0.20.6
+ARG SUPERSET_VERSION=0.22.1
 
 # Configure environment
 ENV LANG=en_US.utf8 \
@@ -48,7 +48,7 @@ RUN  mkdir /conda_overlay \
 FROM matthewcmead/anaconda-nb-docker-centos7 as runner
 
 # Superset version
-ARG SUPERSET_VERSION=0.20.6
+ARG SUPERSET_VERSION=0.22.1
 
 # Configure environment
 ENV LANG=en_US.utf8 \
