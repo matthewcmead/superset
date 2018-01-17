@@ -69,11 +69,13 @@ COPY --from=builder /conda_overlay/conda /opt/conda
 
 RUN useradd -b /home -U -m superset && \
     mkdir /etc/superset && \
+    mkdir /etc/superset/db && \
     chown -R superset:superset /home/superset /etc/superset
 
 # Configure Filesysten
 COPY superset /usr/local/bin
 VOLUME /etc/superset
+VOLUME /etc/superset/db
 WORKDIR /home/superset
 
 # Deploy application
