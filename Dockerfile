@@ -24,7 +24,7 @@ RUN \
       mariadb-devel \
       postgresql-devel \
       libffi-devel \
-&&  pip install --no-index --find-links /project/pips \
+&&  pip install --no-cache-dir --no-index --find-links /project/pips \
         flask-cors==3.0.3 \
         flask-mail==0.9.1 \
         flask-oauth==0.12 \
