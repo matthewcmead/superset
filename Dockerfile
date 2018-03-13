@@ -1,7 +1,7 @@
 FROM matthewcmead/anaconda-nb-docker-centos7 as builder
 
 # Superset version
-ARG SUPERSET_VERSION=0.22.1
+ARG SUPERSET_VERSION=0.23.2
 
 # Configure environment
 ENV LANG=en_US.utf8 \
@@ -39,6 +39,8 @@ RUN \
         sqlalchemy-redshift==0.5.0 \
         sqlalchemy-clickhouse==0.1.1.post3 \
         Werkzeug==0.12.1 \
+        idna==2.6 \
+        requests==2.17.3 \
         superset==${SUPERSET_VERSION}
 
 RUN  mkdir /conda_overlay \
@@ -48,7 +50,7 @@ RUN  mkdir /conda_overlay \
 FROM matthewcmead/anaconda-nb-docker-centos7 as runner
 
 # Superset version
-ARG SUPERSET_VERSION=0.22.1
+ARG SUPERSET_VERSION=0.23.2
 
 # Configure environment
 ENV LANG=en_US.utf8 \
