@@ -18,4 +18,5 @@ export SUPERSET_VERSION=0.23.2
         sqlalchemy-redshift==0.5.0 \
         sqlalchemy-clickhouse==0.1.1.post3 \
         Werkzeug==0.12.1 \
+        pytest-runner \
         superset==$SUPERSET_VERSION
