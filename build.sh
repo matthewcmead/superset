@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+trap kill_server INT
+
+function kill_server {
+  kill -9 %1
+}
+
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   TARGET="$(readlink "$SOURCE")"
@@ -12,5 +18,14 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-docker run -it --rm -v "$DIR":/project matthewcmead/anaconda-nb-docker-centos7 /project/getpips.sh
+if [ $(uname) == "Darwin" ]; then
+  echo docker.for.mac.localhost >conf/repohost
+else
+  echo none >conf/repohost
+fi
+
+python -m SimpleHTTPServer 8879 &
+cd "$DIR" && \
+#docker run -it --rm -v $(pwd):/project matthewcmead/anaconda-nb-docker-centos7 /project/getpips.sh
 docker build -t matthewcmead/superset-centos7 .
+kill_server
