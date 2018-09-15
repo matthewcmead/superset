@@ -45,6 +45,9 @@ RUN \
 
 COPY conf/repohost /tmp/repohost
 
+ARG SUPERSET_MD5
+ENV SUPERSET_MD5=${SUPERSET_MD5}
+
 RUN \
     export THEHOST=$(cat /tmp/repohost) \
 &&  if grep none /tmp/repohost; then export THEHOST=$(ip route show | grep default | sed "s/^default via //; s/ .*$//"); fi \
@@ -75,6 +78,9 @@ RUN useradd -b /home -U -m superset && \
     chown -R superset:superset /home/superset /etc/superset
 
 RUN mkdir /var/lib/superset && chown -R superset:superset /var/lib/superset
+
+RUN if [ ! -d /usr/lib/python3.4/site-packages/superset/app ]; then mkdir /usr/lib/python3.4/site-packages/superset/app; fi \
+&&  chown -R superset:superset /usr/lib/python3.4/site-packages/superset/app
 
 # Configure Filesystem
 COPY superset /usr/local/bin
