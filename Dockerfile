@@ -1,7 +1,11 @@
-FROM centos:7
+FROM matthewcmead/superset-centos7-base
 
 # Superset version
 ARG SUPERSET_VERSION=0.26.3
+
+# Tileserver root url
+ARG ARG_TILESERVER_ROOT_URL=localhost:8080
+ENV ARG_TILESERVER_ROOT_URL=${ARG_TILESERVER_ROOT_URL}
 
 # Configure environment
 ENV LANG=en_US.utf8 \
@@ -9,39 +13,6 @@ ENV LANG=en_US.utf8 \
     PYTHONPATH=/etc/superset:/home/superset:$PYTHONPATH \
     SUPERSET_VERSION=${SUPERSET_VERSION} \
     SUPERSET_HOME=/var/lib/superset
-
-RUN \
-    sed -i "s/override_install_langs=en_US.UTF-8/override_install_langs=en_US.utf8/g" /etc/yum.conf \
-&&  yum groups mark install "Development Tools" \
-&&  yum groups mark convert "Development Tools" \
-&&  yum groupinstall -y 'Development Tools' \
-&&  yum install -y \
-      wget \
-      bzip2 \
-      ca-certificates \
-      glib2 \
-      libXext \
-      libSM \
-      libXrender \
-      git \
-      mercurial \
-      subversion \
-      curl \
-      grep \
-      sed \
-      cyrus-sasl-devel \
-      openldap-devel \
-      mariadb-devel \
-      postgresql-devel \
-      libffi-devel \
-      cyrus-sasl-devel \
-      openldap-devel \
-      mariadb-devel \
-      postgresql-devel \
-      libffi-devel \
-&&  yum install -y epel-release \
-&&  yum install -y python34 python34-pip python34-devel python34-Cython \
-&&  yum clean all
 
 COPY conf/repohost /tmp/repohost
 
@@ -51,10 +22,21 @@ ENV SUPERSET_MD5=${SUPERSET_MD5}
 RUN \
     export THEHOST=$(cat /tmp/repohost) \
 &&  if grep none /tmp/repohost; then export THEHOST=$(ip route show | grep default | sed "s/^default via //; s/ .*$//"); fi \
-&&  wget http://${THEHOST}:8879/pips/requirements.txt -O /tmp/requirements.txt \
+&&  wget -q http://${THEHOST}:8879/pips/requirements.txt -O /tmp/requirements.txt \
 &&  cat /tmp/requirements.txt \
-&&  pip3.4 install --trusted-host ${THEHOST} --no-cache-dir --no-index --find-links http://${THEHOST}:8879/pips/ \
+&&  cd /tmp \
+&&  wget -q -O - http://${THEHOST}:8879/incubator-superset.tar.gz | tar zxf - \
+&&  wget -q -O - http://${THEHOST}:8879/node-v6.11.5-linux-x64.tar.xz | tar -C /usr/local -Jxf - \
+&&  export PATH=/usr/local/node-v6.11.5-linux-x64/bin:${PATH} \
+&&  cd incubator-superset \
+&&  for f in $(find . -type f -print0 | xargs -0 grep -l ARG_TILESERVER_ROOT_URL); do sed -i.bak "s,ARG_TILESERVER_ROOT_URL,${ARG_TILESERVER_ROOT_URL},g" $f; done \
+&&  ./pypi_push.sh \
+&&  ls -altr dist \
+&&  ls -altr /usr/lib/python3.4/site-packages \
+&&  pip3.4 uninstall superset || echo "superset not installed" \
+&&  pip3.4 install --upgrade --trusted-host ${THEHOST} --no-cache-dir --no-index --find-links http://${THEHOST}:8879/pips/ \
       -r /tmp/requirements.txt \
+        dist/superset-0.26.3.tar.gz \
         Werkzeug==0.12.1 \
         flask-cors==3.0.3 \
         flask-mail==0.9.1 \
@@ -67,7 +49,10 @@ RUN \
         pyhive==0.5.1 \
         pyldap==2.4.28 \
         redis==2.10.5 \
-        superset==${SUPERSET_VERSION}
+        Click==6.7 \
+&&  cd /tmp \
+&&  rm -rf /usr/local/node-v6.11.5-linux-x64 \
+&&  rm -rf /tmp/incubator-superset
 
 
 #RUN chmod 755 /tini
@@ -79,7 +64,7 @@ RUN useradd -b /home -U -m superset && \
 
 RUN mkdir /var/lib/superset && chown -R superset:superset /var/lib/superset
 
-RUN if [ ! -d /usr/lib/python3.4/site-packages/superset/app ]; then mkdir /usr/lib/python3.4/site-packages/superset/app; fi \
+RUN if [ ! -d /usr/lib/python3.4/site-packages/superset/app ]; then ls /usr/lib/python3.4/site-packages && mkdir /usr/lib/python3.4/site-packages/superset/app; fi \
 &&  chown -R superset:superset /usr/lib/python3.4/site-packages/superset/app
 
 # Configure Filesystem

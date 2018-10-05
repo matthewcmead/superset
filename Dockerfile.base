@@ -1,0 +1,39 @@
+FROM centos:7
+
+ENV LANG=en_US.utf8 \
+    LC_ALL=en_US.utf8
+
+RUN \
+    sed -i "s/override_install_langs=en_US.UTF-8/override_install_langs=en_US.utf8/g" /etc/yum.conf \
+&&  yum groups mark install "Development Tools" \
+&&  yum groups mark convert "Development Tools" \
+&&  yum groupinstall -y 'Development Tools' \
+&&  yum install -y \
+      wget \
+      bzip2 \
+      ca-certificates \
+      glib2 \
+      libXext \
+      libSM \
+      libXrender \
+      git \
+      mercurial \
+      subversion \
+      curl \
+      grep \
+      sed \
+      cyrus-sasl-devel \
+      openldap-devel \
+      mariadb-devel \
+      postgresql-devel \
+      libffi-devel \
+      cyrus-sasl-devel \
+      openldap-devel \
+      mariadb-devel \
+      postgresql-devel \
+      libffi-devel \
+      git \
+&&  yum install -y epel-release \
+&&  yum install -y python34 python34-pip python34-devel python34-Cython \
+&&  yum clean all \
+&&  pip3.4 install --upgrade 'setuptools>=38.6.0'

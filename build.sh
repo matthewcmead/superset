@@ -62,6 +62,7 @@ fi
 python -m "$python_http_server" 8879 &
 
 cd "$DIR" && \
-docker run -it --rm -e ARG_TILESERVER_ROOT_URL="$1" -e SKIP_DL="$SKIP_DL" -v $(pwd):/project centos:7 /project/getpips.sh || bail "Failed to get dependencies and/or modify for tileserver URL"
-docker build -t matthewcmead/superset-centos7 . || bail "Failed to build final container."
+docker build -t matthewcmead/superset-centos7-base -f Dockerfile.base . || bail "Failed to build base image"
+docker run -it --rm -e ARG_TILESERVER_ROOT_URL="$1" -e SKIP_DL="$SKIP_DL" -v $(pwd):/project matthewcmead/superset-centos7-base /project/getpips.sh || bail "Failed to get dependencies and/or modify for tileserver URL"
+docker build --build-arg ARG_TILESERVER_ROOT_URL="$1" -t matthewcmead/superset-centos7 . || bail "Failed to build final container."
 kill_server

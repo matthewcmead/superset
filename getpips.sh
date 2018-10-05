@@ -6,23 +6,19 @@ cd /project
 if [ ! -f node-v6.11.5-linux-x64.tar.xz ]; then
   curl -O -J -L https://nodejs.org/dist/v6.11.5/node-v6.11.5-linux-x64.tar.xz
 fi
-yum install -y git
 if [ ! -f incubator-superset.tar.gz ]; then
   pushd /tmp
   git clone https://github.com/matthewcmead/incubator-superset
   cd incubator-superset
   git checkout 0.26.3_tileserver
-  cd ..
-  tar zcf /project/incubator-superset.tar.gz incubator-superset
-  rm -rf incubator-superset
   popd
 fi
-sed -i "s/override_install_langs=en_US.UTF-8/override_install_langs=en_US.utf8/g" /etc/yum.conf 
-yum groups mark install "Development Tools"
-yum groups mark convert "Development Tools"
-yum groupinstall -y 'Development Tools'
-yum install -y mariadb-devel postgresql epel-release
-yum install -y python34 python34-pip python34-devel python34-Cython
+#sed -i "s/override_install_langs=en_US.UTF-8/override_install_langs=en_US.utf8/g" /etc/yum.conf 
+#yum groups mark install "Development Tools"
+#yum groups mark convert "Development Tools"
+#yum groupinstall -y 'Development Tools'
+#yum install -y mariadb-devel postgresql epel-release
+#yum install -y python34 python34-pip python34-devel python34-Cython
 cd /project/pips
 export SUPERSET_VERSION=0.26.3
 export SUPERSET_REPO=apache/incubator-superset
@@ -48,17 +44,21 @@ if [ X$SKIP_DL = X0 ]; then
           superset==${SUPERSET_VERSION}
 fi
 
-pip3 install --upgrade 'setuptools>=38.6.0'
+rm -f /project/pips/superset*
 
 cd /tmp
 tar -C /usr/local -Jxf /project/node-v6.11.5-linux-x64.tar.xz
 export PATH=/usr/local/node-v6.11.5-linux-x64/bin:${PATH}
-tar zxf /project/incubator-superset.tar.gz 
-cd incubator-superset
-for f in $(find . -type f -print0 | xargs -0 grep -l ARG_TILESERVER_ROOT_URL); do sed -i.bak "s/ARG_TILESERVER_ROOT_URL/${ARG_TILESERVER_ROOT_URL}/g" $f; done
-cd superset/assets
-npm install -g yarn
-yarn
-cd ../..
-./pypi_push.sh
-cp dist/* /project/pips
+if [ -d incubator-superset ]; then
+  pushd incubator-superset/superset/assets
+  npm install -g yarn
+  yarn
+  popd
+  rm -f /project/incubator-superset.tar.gz
+  tar zcf /project/incubator-superset.tar.gz incubator-superset
+fi
+
+# from incubator-superset root
+#for f in $(find . -type f -print0 | xargs -0 grep -l ARG_TILESERVER_ROOT_URL); do sed -i.bak "s,ARG_TILESERVER_ROOT_URL,${ARG_TILESERVER_ROOT_URL},g" $f; done
+#./pypi_push.sh
+#cp dist/* /project/pips
